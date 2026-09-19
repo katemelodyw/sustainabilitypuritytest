@@ -226,23 +226,23 @@ function doPost(e) {
     const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxKfGBxoaKgpBvn6sjt1NmnwKCmGkCBvVm2F7k88vpTArZjvj_o_9BMr6X3ajNmjWRJpQ/exec";
 
     // 15 Finalized Survey Questions
-    const questions = [
-      { id: 1, text: "Floor Pantry Duty: When I see the floor pantry lights or AC left on with no one inside, I turn them off.", weight: 1.2 },
-      { id: 2, text: "Room AC Setting: When running my room AC, I keep it on a moderate setting (Cool Level 2/3 + Fan) rather than cranking it to Level 4 or 5.", weight: 3.8 },
-      { id: 3, text: "Leaving Room: I always turn off my room lights and AC when leaving for more than an hour.", weight: 3.2 },
-      { id: 4, text: "Meal Planning: I plan my meals and groceries in advance to prevent food from expiring or spoiling in the fridge.", weight: 1.5 },
-      { id: 5, text: "Zero Plate Waste: I rarely throw away leftovers, fresh produce, or unconsumed takeout food.", weight: 2.0 },
-      { id: 6, text: "Hall Circularity: I actively use or participate in college initiatives like the Fan Rental Scheme, Hall Donation Program, or New Farm.", weight: 1.0 },
-      { id: 7, text: "Shower Speed: I consistently keep my shower time under 15 minutes.", weight: 2.8 },
-      { id: 8, text: "Tap Conservation: I always turn off the running tap while brushing my teeth.", weight: 0.8 },
-      { id: 9, text: "Dishwashing Habit: I wash my dishes/cutlery in a filled basin or sink tub rather than letting the tap run continuously.", weight: 1.2 },
-      { id: 10, text: "BYO Reusables: I regularly bring my own reusable water bottle, food container, or cutlery when eating out or getting takeout.", weight: 1.5 },
-      { id: 11, text: "Waste Sorting: I actively separate my recyclables (plastics, cans, paper) and place them in proper hall sorting bins.", weight: 1.2 },
-      { id: 12, text: "Recycling Knowledge: I am confident that I know what can and cannot be recycled in Hong Kong hall facilities.", weight: 0.8 },
-      { id: 13, text: "Personal Values: Practicing sustainability in my daily hall life is personally very important to me.", weight: 0.5 },
-      { id: 14, text: "Peer Nagging: I gently remind or encourage my room/hall mates to save energy or reduce waste.", weight: 0.8 },
-      { id: 15, text: "Eager Learner: I want to participate in hands-on green workshops (e.g. upcycled mushroom growing, zero-waste cooking) this semester.", weight: 0.5 }
-    ];
+   const questions = [
+  { id: 1, text: "Floor Pantry Duty: When I see the floor pantry lights or AC left on with no one inside, I turn them off.", weight: 1.2 },
+  { id: 2, text: "Room AC Setting: When running my room AC, I keep it on a moderate setting (Cool Level 2/3 + Fan) rather than cranking it to Level 4 or 5.", weight: 4.0 },
+  { id: 3, text: "Leaving Room: I always turn off my room lights and AC when leaving for more than an hour.", weight: 3.0 },
+  { id: 4, text: "Meal Planning: I plan my meals and groceries in advance to prevent food from expiring or spoiling in the fridge.", weight: 1.5 },
+  { id: 5, text: "Zero Plate Waste: I rarely throw away leftovers, fresh produce, or unconsumed takeout food.", weight: 2.0 },
+  { id: 6, text: "Hall Circularity: I actively use or participate in college initiatives like the Fan Rental Scheme, Hall Donation Program, or New Farm.", weight: 1.0 },
+  { id: 7, text: "Shower Speed: I consistently keep my shower time under 15 minutes.", weight: 2.5 },
+  { id: 8, text: "Cold Water Advocate: I wash my face, hands, or laundry using cold water instead of turning on the hot water heater unnecessarily.", weight: 2.0 },
+  { id: 9, text: "Dishwashing Habit: I wash my dishes/cutlery in a filled basin or sink tub rather than letting the tap run continuously.", weight: 1.0 },
+  { id: 10, text: "BYO Reusables: I regularly bring my own reusable water bottle, food container, or cutlery when eating out or getting takeout.", weight: 1.8 },
+  { id: 11, text: "Waste Sorting: I actively separate my recyclables (plastics, cans, paper) and place them in proper hall sorting bins.", weight: 1.0 },
+  { id: 12, text: "Recycling Knowledge: I am confident that I know what can and cannot be recycled in Hong Kong hall facilities.", weight: 0.8 },
+  { id: 13, text: "Personal Values: Practicing sustainability in my daily hall life is personally very important to me.", weight: 0.5 },
+  { id: 14, text: "Peer Nagging: I gently remind or encourage my room/hall mates to save energy or reduce waste.", weight: 0.7 },
+  { id: 15, text: "Eager Learner: I want to participate in hands-on green workshops (e.g. upcycled mushroom growing, beach clean-up) this semester.", weight: 0.5 }
+];
 
     // 5 Result Archetypes
     const archetypes = [
