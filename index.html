@@ -1,17 +1,485 @@
-I will now update the **New College Sustainability Purity Test** application to include real-time **Carbon Footprint Estimation** and **Tangible Real-World Equivalencies** alongside the archetypes and Google Sheets integration.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>New College Sustainability Purity Test 🌿</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-dark: #1b5e20;
+      --primary-light: #e8f5e9;
+      --accent: #ff9800;
+      --text: #1f2937;
+      --bg: #f4f7f6;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+    }
 
-### What's New:
+    /* Clean background override to ensure zero background text/artifacts */
+    body {
+      background-color: var(--bg) !important;
+      background-image: none !important;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+    }
 
-1. **Dynamic Carbon Calculation (kg CO₂e/month & per day):**
-* Weighted carbon model factoring in AC dial settings & night usage, hot water shower duration, food waste, BYO usage, and common room energy.
-* Ranges from an **Eco Baseline (~70 kg CO₂e/month)** for level 2+fan users up to **~380+ kg CO₂e/month** for level 5/hot shower maxers.
+    /* Scale option radio buttons custom styling */
+    .scale-option input[type="radio"] {
+      display: none;
+    }
 
+    .scale-option label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #4b5563;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+    }
 
-2. **Relatable Real-World Comparisons:**
-* **Flight Equivalency:** Compares monthly footprint to a flight from Hong Kong to Taipei (~180 kg CO₂e) or regional destinations.
-* **Smartphones Charged:** Shows equivalent smartphone battery charges (~120 charges per kg CO₂e).
-* **Tree Absorption:** Displays how many mature trees are required to absorb that month's emissions.
-* **HKU Dorm Benchmark:** Shows how their emissions rank against the typical HKU resident average (~180 kg CO₂e/month).
+    .scale-option input[type="radio"]:checked + label {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(46, 125, 50, 0.3);
+    }
 
+    /* Smooth Modal Transitions */
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body class="p-4 sm:p-6 flex justify-center items-center">
 
-3. **Updated Database Webhook:** Automatically logs `carbon_month` and `carbon_day` directly into your Google Sheets along with the 15 question answers, total score, and archetype.
+  <!-- MAIN APP CONTAINER -->
+  <div class="w-full max-w-xl bg-white rounded-2xl shadow-xl p-5 sm:p-8 relative border border-gray-100 my-auto">
+    
+    <!-- ADMIN SETTINGS BUTTON (Top Right) -->
+    <button onclick="toggleAdminModal(true)" class="absolute top-4 right-4 text-gray-400 hover:text-green-700 p-2 rounded-full transition-colors focus:outline-none" title="GLT Database Settings">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    </button>
+
+    <!-- QUIZ FORM SCREEN -->
+    <div id="quiz-screen">
+      <header class="text-center mb-6 pr-6">
+        <div class="inline-flex items-center gap-2 bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full mb-2">
+          <span>🌿 HKU New College GLT</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-green-800 tracking-tight">Sustainability Purity Test</h1>
+        <p class="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">Rate your daily dorm habits (1 to 5) to discover your Green Living Archetype and estimated monthly carbon footprint!</p>
+        
+        <!-- Rating Legend -->
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mt-4 text-xs font-semibold text-emerald-900 flex justify-between items-center">
+          <span class="flex items-center gap-1">🔴 1 = Never / High Emissions</span>
+          <span class="flex items-center gap-1">🟢 5 = Always / Low Carbon</span>
+        </div>
+      </header>
+
+      <form id="purity-form" class="space-y-4">
+        <div id="questions-wrapper" class="space-y-4"></div>
+        
+        <button type="button" class="w-full py-4 bg-green-700 hover:bg-green-800 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all transform active:scale-95 mt-6" onclick="submitQuiz()">
+          Calculate Footprint & Archetype ✨
+        </button>
+      </form>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden text-center py-2">
+      <div id="status-toast" class="hidden mb-4 p-3 bg-green-100 border border-green-300 text-green-800 text-xs font-semibold rounded-lg text-center animate-fade-in">
+        ✅ Response recorded to GLT Database!
+      </div>
+
+      <div class="text-6xl mb-2" id="res-badge">🌿</div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-green-800 mb-1" id="res-title">The Eco-Prophet</h2>
+      <div class="inline-block bg-green-100 text-green-800 font-bold px-4 py-1 rounded-full text-xs sm:text-sm mb-3" id="res-score">Score: 0 / 75</div>
+      
+      <p class="italic text-gray-600 mb-4 text-xs sm:text-sm font-medium px-4" id="res-quote">"Cool Level 2 + Fan is all you need."</p>
+
+      <!-- CARBON FOOTPRINT DASHBOARD CARD -->
+      <div class="bg-gradient-to-br from-emerald-900 to-green-800 text-white p-5 rounded-2xl shadow-lg text-left mb-5">
+        <div class="text-xs uppercase tracking-wider font-semibold text-emerald-200 mb-1">Your Estimated Dorm Carbon Footprint</div>
+        <div class="flex items-baseline gap-2 mb-3">
+          <span class="text-3xl sm:text-4xl font-extrabold" id="res-carbon-month">0</span>
+          <span class="text-sm text-emerald-100 font-medium">kg CO₂e / month</span>
+          <span class="text-xs text-emerald-300 ml-auto font-mono" id="res-carbon-day">(~0 kg/day)</span>
+        </div>
+
+        <!-- BENCHMARK COMPARISON BAR -->
+        <div class="border-t border-emerald-700/60 pt-3 mt-2 text-xs">
+          <div class="flex justify-between text-emerald-200 text-[11px] mb-1">
+            <span>Eco-Prophet (~75kg)</span>
+            <span>HKU Dorm Avg (~180kg)</span>
+            <span>High Impact (350kg+)</span>
+          </div>
+          <div class="w-full bg-emerald-950/80 rounded-full h-2.5 overflow-hidden">
+            <div id="carbon-progress-bar" class="bg-emerald-400 h-full rounded-full transition-all duration-700" style="width: 30%"></div>
+          </div>
+          <p id="benchmark-status-text" class="text-emerald-100 mt-2 font-medium text-[12px] leading-snug">Loading benchmark analysis...</p>
+        </div>
+      </div>
+
+      <!-- TANGIBLE EQUIVALENCY COMPARISONS CARD -->
+      <div class="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-left mb-5">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-orange-900 mb-3 flex items-center gap-1.5">
+          <span>✈️</span> Real-World Carbon Equivalencies
+        </h3>
+        <ul class="space-y-2.5 text-xs sm:text-sm text-gray-800 font-medium">
+          <li class="flex items-start gap-2.5">
+            <span class="text-base leading-none">✈️</span>
+            <span id="equiv-flight">Equal to a 1-way flight from HK to Taipei!</span>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <span class="text-base leading-none">📱</span>
+            <span id="equiv-phones">Equal to charging 0 smartphones.</span>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <span class="text-base leading-none">🌳</span>
+            <span id="equiv-trees">Requires 0 mature trees a full year to offset.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ARCHETYPE DESCRIPTION -->
+      <div class="text-left text-xs sm:text-sm text-gray-700 bg-gray-50 border border-gray-200 p-4 rounded-xl leading-relaxed mb-6 space-y-2" id="res-desc">
+        Profile description here...
+      </div>
+
+      <div class="space-y-3">
+        <button onclick="resetQuiz()" class="w-full py-3.5 bg-gray-700 hover:bg-gray-800 text-white rounded-xl font-bold text-base shadow transition-all active:scale-95">
+          Take Quiz Again 🔄
+        </button>
+      </div>
+    </div>
+
+    <!-- GLT ORGANIZER SETTINGS MODAL -->
+    <div id="admin-modal" class="fixed inset-0 modal-backdrop hidden flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <span>📊</span> GLT Database Integration
+          </h3>
+          <button onclick="toggleAdminModal(false)" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+        </div>
+
+        <div class="space-y-4 text-xs sm:text-sm text-gray-600">
+          <p>Connect this quiz to a <strong>Google Sheet</strong> so every student submission, carbon score, and responses are logged automatically.</p>
+          
+          <div>
+            <label class="block font-semibold text-gray-800 mb-1">Google Apps Script Webhook URL:</label>
+            <input type="text" id="webhook-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none font-mono text-xs" />
+          </div>
+
+          <div class="flex gap-2">
+            <button onclick="saveWebhookUrl()" class="flex-1 py-2 bg-green-700 text-white font-bold rounded-lg hover:bg-green-800 text-xs sm:text-sm">Save Webhook URL</button>
+            <button onclick="testWebhook()" class="py-2 px-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 text-xs">Test Connection</button>
+          </div>
+
+          <!-- ACCORDION INSTRUCTIONS -->
+          <details class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs leading-relaxed">
+            <summary class="font-bold text-green-800 cursor-pointer">📖 Updated Apps Script Setup Code</summary>
+            <ol class="list-decimal list-inside space-y-2 mt-2 text-gray-700">
+              <li>Create a new Google Sheet named <strong>"GLT Survey Data"</strong>.</li>
+              <li>Column headers (Row 1): <code>Timestamp</code>, <code>Score</code>, <code>Archetype</code>, <code>CarbonMonth_kg</code>, <code>CarbonDay_kg</code>, <code>Q1</code> to <code>Q15</code>.</li>
+              <li>Go to <strong>Extensions &gt; Apps Script</strong> and paste:
+                <pre class="bg-gray-800 text-green-400 p-2 rounded mt-1 overflow-x-auto text-[10px] font-mono">
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  var row = [new Date(), data.score, data.archetype, data.carbon_month, data.carbon_day];
+  for(var i=1; i<=15; i++) { row.push(data["q"+i] || ""); }
+  sheet.appendRow(row);
+  return ContentService.createTextOutput("Success");
+}</pre>
+              </li>
+              <li>Deploy as <strong>Web app</strong>, setting access to <strong>Anyone</strong>.</li>
+            </ol>
+          </details>
+        </div>
+
+        <div class="mt-5 text-right">
+          <button onclick="toggleAdminModal(false)" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg text-xs">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 15 Finalized Survey Questions
+    const questions = [
+      { id: 1, text: "Floor Pantry Duty: When I see the floor pantry lights or AC left on with no one inside, I turn them off.", weight: 1.2 },
+      { id: 2, text: "Room AC Setting: When running my room AC, I keep it on a moderate setting (Cool Level 2/3 + Fan) rather than cranking it to Level 4 or 5.", weight: 3.8 },
+      { id: 3, text: "Leaving Room: I always turn off my room lights and AC when leaving for more than an hour.", weight: 3.2 },
+      { id: 4, text: "Meal Planning: I plan my meals and groceries in advance to prevent food from expiring or spoiling in the fridge.", weight: 1.5 },
+      { id: 5, text: "Zero Plate Waste: I rarely throw away leftovers, fresh produce, or unconsumed takeout food.", weight: 2.0 },
+      { id: 6, text: "Hall Circularity: I actively use or participate in college initiatives like the Fan Rental Scheme, Hall Donation Program, or New Farm.", weight: 1.0 },
+      { id: 7, text: "Shower Speed: I consistently keep my shower time under 15 minutes.", weight: 2.8 },
+      { id: 8, text: "Tap Conservation: I always turn off the running tap while brushing my teeth.", weight: 0.8 },
+      { id: 9, text: "Dishwashing Habit: I wash my dishes/cutlery in a filled basin or sink tub rather than letting the tap run continuously.", weight: 1.2 },
+      { id: 10, text: "BYO Reusables: I regularly bring my own reusable water bottle, food container, or cutlery when eating out or getting takeout.", weight: 1.5 },
+      { id: 11, text: "Waste Sorting: I actively separate my recyclables (plastics, cans, paper) and place them in proper hall sorting bins.", weight: 1.2 },
+      { id: 12, text: "Recycling Knowledge: I am confident that I know what can and cannot be recycled in Hong Kong hall facilities.", weight: 0.8 },
+      { id: 13, text: "Personal Values: Practicing sustainability in my daily hall life is personally very important to me.", weight: 0.5 },
+      { id: 14, text: "Peer Nagging: I gently remind or encourage my room/hall mates to save energy or reduce waste.", weight: 0.8 },
+      { id: 15, text: "Eager Learner: I want to participate in hands-on green workshops (e.g. upcycled mushroom growing, zero-waste cooking) this semester.", weight: 0.5 }
+    ];
+
+    // 5 Result Archetypes
+    const archetypes = [
+      {
+        min: 65, max: 75,
+        badge: "🌿",
+        title: "The Eco-Prophet",
+        quote: '"Cool Level 2 + Fan is all you need."',
+        desc: "You don't just live green; you lead the green movement! You turn off pantry ACs, wash dishes in a basin, donate gear, and keep your room cool responsibly. You are the ultimate Green Living Team champion."
+      },
+      {
+        min: 52, max: 64,
+        badge: "♻️",
+        title: "The Conscious Resident",
+        quote: '"BYO container, quick shower, back to studying."',
+        desc: "Solid green habits with high everyday impact! You recycle properly, carry a reusable bottle, and turn off room lights. You occasionally forget a meal during midterm week, but your impact is overwhelmingly positive."
+      },
+      {
+        min: 38, max: 51,
+        badge: "⚖️",
+        title: "The Balanced Hedonist",
+        quote: '"I care about the planet, but convenience is key."',
+        desc: "Eco-friendly... when it doesn't clash with convenience. You sort waste when a bin is nearby, but when exam stress strikes, AC Level 5 and single-use takeout containers take over."
+      },
+      {
+        min: 25, max: 37,
+        badge: "👻",
+        title: "The Pantry Spectre",
+        quote: '"Someone else will turn the pantry AC off, right?"',
+        desc: "Habitually leaving a carbon footprint in common spaces. You leave pantry lights on, take long steamy showers, and walk past the Hall Donation signs without reading them."
+      },
+      {
+        min: 15, max: 24,
+        badge: "🦖",
+        title: "The Carbon Footprint Titan",
+        quote: '"What is a recycling bin?"',
+        desc: "Living in maximum indoor luxury at the planet's expense. Running AC at Level 5 with a heavy duvet year-round, 30-minute hot showers, and single-use plastics every meal."
+      }
+    ];
+
+    // Render questions dynamically on load
+    window.onload = function() {
+      const wrapper = document.getElementById('questions-wrapper');
+      
+      questions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'bg-gray-50 border border-gray-200 rounded-xl p-4 transition-all hover:border-green-300';
+        
+        let optionsHTML = '';
+        for (let i = 1; i <= 5; i++) {
+          optionsHTML += `
+            <div class="scale-option flex-1">
+              <input type="radio" id="q${q.id}_val${i}" name="q${q.id}" value="${i}" ${i === 3 ? 'checked' : ''}>
+              <label for="q${q.id}_val${i}">${i}</label>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="text-xs sm:text-sm font-semibold text-gray-800 mb-3 leading-snug">${idx + 1}. ${q.text}</div>
+          <div class="flex justify-between gap-2">${optionsHTML}</div>
+        `;
+        wrapper.appendChild(card);
+      });
+
+      // Load existing Webhook URL if saved
+      const savedWebhook = localStorage.getItem('glt_webhook_url');
+      if (savedWebhook) {
+        document.getElementById('webhook-url').value = savedWebhook;
+      }
+    };
+
+    function calculateCarbonFootprint(responses) {
+      // Baseline emissions for dorm accommodation (kg CO2e / month)
+      // Base overhead: 60 kg (hall lighting, water supply infrastructure, elevators)
+      let monthlyCarbon = 360; 
+
+      // Deduct carbon for sustainable choices (1 = bad/no deduction, 5 = max carbon savings)
+      questions.forEach(q => {
+        const rating = responses[`q${q.id}`] || 3;
+        // Each higher score deducts carbon from the high-impact ceiling
+        const carbonDeduction = (rating - 1) * 4.8 * q.weight; 
+        monthlyCarbon -= carbonDeduction;
+      });
+
+      // Clamp footprint within realistic HKU dorm limits (70kg to 380kg CO2e/month)
+      monthlyCarbon = Math.max(70, Math.min(385, Math.round(monthlyCarbon)));
+      const dailyCarbon = (monthlyCarbon / 30).toFixed(1);
+
+      return { monthlyCarbon, dailyCarbon };
+    }
+
+    function submitQuiz() {
+      let totalScore = 0;
+      const responses = {};
+
+      questions.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const val = selected ? parseInt(selected.value) : 3;
+        totalScore += val;
+        responses[`q${q.id}`] = val;
+      });
+
+      const matched = archetypes.find(a => totalScore >= a.min && totalScore <= a.max);
+      const carbon = calculateCarbonFootprint(responses);
+
+      // Render Result Screen Archetype info
+      document.getElementById('res-badge').innerText = matched.badge;
+      document.getElementById('res-title').innerText = matched.title;
+      document.getElementById('res-score').innerText = `Score: ${totalScore} / 75`;
+      document.getElementById('res-quote').innerText = matched.quote;
+      document.getElementById('res-desc').innerText = matched.desc;
+
+      // Render Carbon Metrics
+      document.getElementById('res-carbon-month').innerText = carbon.monthlyCarbon;
+      document.getElementById('res-carbon-day').innerText = `(~${carbon.dailyCarbon} kg/day)`;
+
+      // Set benchmark status text & progress bar
+      const pBar = document.getElementById('carbon-progress-bar');
+      const bText = document.getElementById('benchmark-status-text');
+      
+      // Calculate progress bar percentage relative to max 380kg
+      const barPct = Math.min(100, Math.max(12, Math.round((carbon.monthlyCarbon / 380) * 100)));
+      pBar.style.width = barPct + '%';
+
+      if (carbon.monthlyCarbon < 120) {
+        pBar.className = 'bg-emerald-400 h-full rounded-full transition-all duration-700';
+        bText.innerText = `🌟 Outstanding! You are ${180 - carbon.monthlyCarbon} kg below the HKU dorm average (~180 kg/mo).`;
+      } else if (carbon.monthlyCarbon <= 220) {
+        pBar.className = 'bg-yellow-400 h-full rounded-full transition-all duration-700';
+        bText.innerText = `⚠️ Moderate! You are around the typical HKU dorm average (~180 kg/mo). Modifying AC & shower habits will drop this fast.`;
+      } else {
+        pBar.className = 'bg-red-400 h-full rounded-full transition-all duration-700';
+        bText.innerText = `🚨 High Footprint! You emit ${carbon.monthlyCarbon - 180} kg MORE per month than the average resident.`;
+      }
+
+      // Calculate Real-World Comparisons
+      // HK to Taipei 1-way economy flight = ~180 kg CO2e
+      const flightRatio = (carbon.monthlyCarbon / 180).toFixed(1);
+      let flightDesc = "";
+      if (flightRatio >= 1) {
+        flightDesc = `Equal to ${flightRatio}× one-way flights from Hong Kong to Taipei ✈️ (~180 kg CO₂e each)!`;
+      } else {
+        const pctFlight = Math.round(flightRatio * 100);
+        flightDesc = `Equal to ${pctFlight}% of a one-way flight from HK to Taipei ✈️!`;
+      }
+      document.getElementById('equiv-flight').innerText = flightDesc;
+
+      // Smartphones charged: ~120 charges per 1 kg CO2e
+      const phoneCharges = (carbon.monthlyCarbon * 122).toLocaleString();
+      document.getElementById('equiv-phones').innerText = `Equal to charging ${phoneCharges} smartphones 📱!`;
+
+      // Trees needed: 1 mature tree absorbs ~22 kg CO2 per year (~1.83 kg/month)
+      const treesNeeded = Math.round(carbon.monthlyCarbon / 1.83);
+      document.getElementById('equiv-trees').innerText = `Requires ${treesNeeded} mature trees 🌳 a full year to offset your monthly emissions.`;
+
+      // Send Data to Google Sheets Webhook if configured
+      sendDataToDatabase(totalScore, matched.title, carbon.monthlyCarbon, carbon.dailyCarbon, responses);
+
+      // Switch Screens
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function sendDataToDatabase(score, archetype, carbonMonth, carbonDay, responses) {
+      const webhookUrl = localStorage.getItem('glt_webhook_url');
+      const toast = document.getElementById('status-toast');
+
+      if (!webhookUrl) {
+        toast.innerText = "ℹ️ Result calculated (Database not connected).";
+        toast.className = "mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold rounded-lg text-center";
+        toast.classList.remove('hidden');
+        return;
+      }
+
+      const payload = {
+        score: score,
+        archetype: archetype,
+        carbon_month: carbonMonth,
+        carbon_day: carbonDay,
+        ...responses
+      };
+
+      fetch(webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors', // Avoid CORS pre-flight block for Google Apps Script
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(() => {
+        toast.innerText = "✅ Response recorded to Green Living Team database!";
+        toast.className = "mb-4 p-3 bg-green-100 border border-green-300 text-green-800 text-xs font-semibold rounded-lg text-center";
+        toast.classList.remove('hidden');
+      }).catch(err => {
+        console.error("Webhook error:", err);
+        toast.innerText = "⚠️ Could not reach database. Check Webhook URL.";
+        toast.className = "mb-4 p-3 bg-amber-50 border border-amber-300 text-amber-800 text-xs font-semibold rounded-lg text-center";
+        toast.classList.remove('hidden');
+      });
+    }
+
+    function resetQuiz() {
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('quiz-screen').classList.remove('hidden');
+      document.getElementById('status-toast').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Modal & Admin Functions
+    function toggleAdminModal(show) {
+      const modal = document.getElementById('admin-modal');
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    }
+
+    function saveWebhookUrl() {
+      const url = document.getElementById('webhook-url').value.trim();
+      localStorage.setItem('glt_webhook_url', url);
+      alert('Webhook URL saved locally!');
+      toggleAdminModal(false);
+    }
+
+    function testWebhook() {
+      const url = document.getElementById('webhook-url').value.trim();
+      if (!url) {
+        alert('Please enter a Webhook URL first.');
+        return;
+      }
+      
+      fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score: 99, archetype: "TEST_RUN", carbon_month: 150, carbon_day: 5.0, q1: 5 })
+      }).then(() => {
+        alert('Test signal sent! Check your Google Sheet to see if a row appeared.');
+      }).catch(err => {
+        alert('Error sending test signal: ' + err);
+      });
+    }
+  </script>
+</body>
+</html>
