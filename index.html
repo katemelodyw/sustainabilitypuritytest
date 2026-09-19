@@ -222,6 +222,9 @@ function doPost(e) {
   </div>
 
   <script>
+    // Hardcoded Webhook URL
+    const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxKfGBxoaKgpBvn6sjt1NmnwKCmGkCBvVm2F7k88vpTArZjvj_o_9BMr6X3ajNmjWRJpQ/exec";
+
     // 15 Finalized Survey Questions
     const questions = [
       { id: 1, text: "Floor Pantry Duty: When I see the floor pantry lights or AC left on with no one inside, I turn them off.", weight: 1.2 },
@@ -305,22 +308,18 @@ function doPost(e) {
         wrapper.appendChild(card);
       });
 
-      // Load existing Webhook URL if saved
-      const savedWebhook = localStorage.getItem('glt_webhook_url');
-      if (savedWebhook) {
-        document.getElementById('webhook-url').value = savedWebhook;
-      }
+      // Load existing Webhook URL if saved, otherwise default to hardcoded URL
+      const savedWebhook = localStorage.getItem('glt_webhook_url') || DEFAULT_WEBHOOK_URL;
+      document.getElementById('webhook-url').value = savedWebhook;
     };
 
     function calculateCarbonFootprint(responses) {
       // Baseline emissions for dorm accommodation (kg CO2e / month)
-      // Base overhead: 60 kg (hall lighting, water supply infrastructure, elevators)
       let monthlyCarbon = 360; 
 
       // Deduct carbon for sustainable choices (1 = bad/no deduction, 5 = max carbon savings)
       questions.forEach(q => {
         const rating = responses[`q${q.id}`] || 3;
-        // Each higher score deducts carbon from the high-impact ceiling
         const carbonDeduction = (rating - 1) * 4.8 * q.weight; 
         monthlyCarbon -= carbonDeduction;
       });
@@ -361,7 +360,6 @@ function doPost(e) {
       const pBar = document.getElementById('carbon-progress-bar');
       const bText = document.getElementById('benchmark-status-text');
       
-      // Calculate progress bar percentage relative to max 380kg
       const barPct = Math.min(100, Math.max(12, Math.round((carbon.monthlyCarbon / 380) * 100)));
       pBar.style.width = barPct + '%';
 
@@ -377,7 +375,6 @@ function doPost(e) {
       }
 
       // Calculate Real-World Comparisons
-      // HK to Taipei 1-way economy flight = ~180 kg CO2e
       const flightRatio = (carbon.monthlyCarbon / 180).toFixed(1);
       let flightDesc = "";
       if (flightRatio >= 1) {
@@ -388,15 +385,13 @@ function doPost(e) {
       }
       document.getElementById('equiv-flight').innerText = flightDesc;
 
-      // Smartphones charged: ~120 charges per 1 kg CO2e
       const phoneCharges = (carbon.monthlyCarbon * 122).toLocaleString();
       document.getElementById('equiv-phones').innerText = `Equal to charging ${phoneCharges} smartphones 📱!`;
 
-      // Trees needed: 1 mature tree absorbs ~22 kg CO2 per year (~1.83 kg/month)
       const treesNeeded = Math.round(carbon.monthlyCarbon / 1.83);
       document.getElementById('equiv-trees').innerText = `Requires ${treesNeeded} mature trees 🌳 a full year to offset your monthly emissions.`;
 
-      // Send Data to Google Sheets Webhook if configured
+      // Send Data to Google Sheets Webhook
       sendDataToDatabase(totalScore, matched.title, carbon.monthlyCarbon, carbon.dailyCarbon, responses);
 
       // Switch Screens
@@ -406,7 +401,7 @@ function doPost(e) {
     }
 
     function sendDataToDatabase(score, archetype, carbonMonth, carbonDay, responses) {
-      const webhookUrl = localStorage.getItem('glt_webhook_url');
+      const webhookUrl = localStorage.getItem('glt_webhook_url') || DEFAULT_WEBHOOK_URL;
       const toast = document.getElementById('status-toast');
 
       if (!webhookUrl) {
@@ -426,7 +421,7 @@ function doPost(e) {
 
       fetch(webhookUrl, {
         method: 'POST',
-        mode: 'no-cors', // Avoid CORS pre-flight block for Google Apps Script
+        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).then(() => {
@@ -457,17 +452,13 @@ function doPost(e) {
 
     function saveWebhookUrl() {
       const url = document.getElementById('webhook-url').value.trim();
-      localStorage.setItem('glt_webhook_url', url);
-      alert('Webhook URL saved locally!');
+      localStorage.setItem('glt_webhook_url', url || DEFAULT_WEBHOOK_URL);
+      alert('Webhook URL saved!');
       toggleAdminModal(false);
     }
 
     function testWebhook() {
-      const url = document.getElementById('webhook-url').value.trim();
-      if (!url) {
-        alert('Please enter a Webhook URL first.');
-        return;
-      }
+      const url = document.getElementById('webhook-url').value.trim() || DEFAULT_WEBHOOK_URL;
       
       fetch(url, {
         method: 'POST',
