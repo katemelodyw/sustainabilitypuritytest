@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>New College Sustainability Purity Test 🌿</title>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-light: #e8f5e9;
+      --accent: #ff9800;
+      --text: #2c3e50;
+      --bg: #f4f7f6;
+      --card-bg: #ffffff;
+      --border: #e0e0e0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .quiz-container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      padding: 24px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .legend-box {
+      background: var(--primary-light);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .question-card {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .question-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .scale-options {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .scale-option {
+      flex: 1;
+      text-align: center;
+    }
+
+    .scale-option input[type="radio"] {
+      display: none;
+    }
+
+    .scale-option label {
+      display: block;
+      padding: 10px 0;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .scale-option input[type="radio"]:checked + label {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover {
+      background: #1b5e20;
+    }
+
+    #result-screen {
+      display: none;
+      text-align: center;
+      padding: 16px 0;
+    }
+
+    .archetype-badge {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .archetype-title {
+      font-size: 1.6rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .score-tag {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .quote-box {
+      font-style: italic;
+      color: #555;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    .profile-desc {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #333;
+      margin-bottom: 24px;
+      text-align: left;
+      background: #fafafa;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .retake-btn {
+      background: #666;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="quiz-container">
+    <!-- QUIZ FORM SCREEN -->
+    <div id="quiz-screen">
+      <header>
+        <h1>New College Sustainability Purity Test 🌿</h1>
+        <p>Rate your daily hall habits on a scale of 1 to 5 to discover your Green Living Archetype!</p>
+        <div class="legend-box">
+          <span>1 = Never / Disagree</span>
+          <span>5 = Always / Agree</span>
+        </div>
+      </header>
+
+      <form id="purity-form">
+        <div id="questions-wrapper"></div>
+        <button type="button" class="submit-btn" onclick="calculateResult()">Reveal My Archetype ✨</button>
+      </form>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen">
+      <div class="archetype-badge" id="res-badge">🌿</div>
+      <div class="archetype-title" id="res-title">The Eco-Prophet</div>
+      <div class="score-tag" id="res-score">Score: 0 / 75</div>
+      <div class="quote-box" id="res-quote">"Cool Level 2 + Fan is all you need."</div>
+      <div class="profile-desc" id="res-desc">Profile description here...</div>
+      <button class="retake-btn" onclick="resetQuiz()">Take Quiz Again 🔄</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { id: 1, category: "Energy", text: "When I see the floor pantry lights or AC left on with no one inside, I turn them off." },
+      { id: 2, category: "Energy", text: "When running my room AC, I keep the cool level on a moderate setting (e.g., Cool Level 2 or 3 with a fan) rather than cranking it to Level 4 or 5." },
+      { id: 3, category: "Energy", text: "I always turn off my room lights and AC when leaving for more than an hour." },
+      { id: 4, category: "Food Waste", text: "I plan my meals and groceries in advance to prevent food from expiring or spoiling in the fridge." },
+      { id: 5, category: "Food Waste", text: "I rarely throw away leftovers, fresh produce, or unconsumed takeout food." },
+      { id: 6, category: "Circular", text: "I actively use or participate in college initiatives like the Fan Rental Scheme, Hall Donation Program, or New Farm." },
+      { id: 7, category: "Water", text: "I consistently keep my shower time under 15 minutes." },
+      { id: 8, category: "Water", text: "I always turn off the running tap while brushing my teeth." },
+      { id: 9, category: "Water", text: "I wash my dishes/cutlery in a filled basin or sink tub rather than letting the tap run continuously." },
+      { id: 10, category: "Waste", text: "I regularly bring my own reusable water bottle, food container, or cutlery when eating out or getting takeout." },
+      { id: 11, category: "Waste", text: "I actively separate my recyclables (plastics, cans, paper) and place them in proper hall sorting bins." },
+      { id: 12, category: "Waste", text: "I am confident that I know what can and cannot be recycled in Hong Kong hall facilities." },
+      { id: 13, category: "Mindset", text: "Practicing sustainability in my daily hall life is personally very important to me." },
+      { id: 14, category: "Mindset", text: "I gently remind or encourage my room/hall mates to save energy or reduce waste." },
+      { id: 15, category: "Mindset", text: "I want to participate in hands-on green workshops (e.g., upcycled mushroom growing, zero-waste cooking) this semester." }
+    ];
+
+    const archetypes = [
+      {
+        min: 65, max: 75,
+        badge: "🌿",
+        title: "The Eco-Prophet",
+        quote: '"Cool Level 2 + Fan is all you need."',
+        desc: "You don't just live green; you lead the green movement! You turn off pantry ACs, wash dishes in a basin, donate gear, and keep your room cool responsibly. You are the ultimate Green Living Team champion."
+      },
+      {
+        min: 52, max: 64,
+        badge: "♻️",
+        title: "The Conscious Resident",
+        quote: '"BYO container, quick shower, back to studying."',
+        desc: "Solid green habits with high everyday impact! You recycle properly, carry a reusable bottle, and turn off room lights. You occasionally forget a meal during midterm week, but your impact is overwhelmingly positive."
+      },
+      {
+        min: 38, max: 51,
+        badge: "⚖️",
+        title: "The Balanced Hedonist",
+        quote: '"I care about the planet, but convenience is key."',
+        desc: "Eco-friendly... when it doesn't clash with convenience. You sort waste when a bin is nearby, but when exam stress strikes, AC Level 5 and single-use takeaway containers take over."
+      },
+      {
+        min: 25, max: 37,
+        badge: "👻",
+        title: "The Pantry Spectre",
+        quote: '"Someone else will turn the pantry AC off, right?"',
+        desc: "Habitually leaving a carbon footprint in common spaces. You leave pantry lights on, take long steamy showers, and walk past the Hall Donation signs without reading them."
+      },
+      {
+        min: 15, max: 24,
+        badge: "🦖",
+        title: "The Carbon Footprint Titan",
+        quote: '"What is a recycling bin?"',
+        desc: "Living in maximum indoor luxury at the planet's expense. Running AC at Level 5 with a heavy duvet year-round, 30-minute hot showers, and single-use plastics every meal."
+      }
+    ];
+
+    // Render questions on load
+    const wrapper = document.getElementById('questions-wrapper');
+    questions.forEach((q, idx) => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      
+      let optionsHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        optionsHTML += `
+          <div class="scale-option">
+            <input type="radio" id="q${q.id}_val${i}" name="q${q.id}" value="${i}" ${i === 3 ? 'checked' : ''}>
+            <label for="q${q.id}_val${i}">${i}</label>
+          </div>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="question-title">${idx + 1}. ${q.text}</div>
+        <div class="scale-options">${optionsHTML}</div>
+      `;
+      wrapper.appendChild(card);
+    });
+
+    function calculateResult() {
+      let totalScore = 0;
+      questions.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        if (selected) {
+          totalScore += parseInt(selected.value);
+        }
+      });
+
+      const matched = archetypes.find(a => totalScore >= a.min && totalScore <= a.max);
+
+      document.getElementById('res-badge').innerText = matched.badge;
+      document.getElementById('res-title').innerText = matched.title;
+      document.getElementById('res-score').innerText = `Score: ${totalScore} / 75`;
+      document.getElementById('res-quote').innerText = matched.quote;
+      document.getElementById('res-desc').innerText = matched.desc;
+
+      document.getElementById('quiz-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    function resetQuiz() {
+      document.getElementById('result-screen').style.display = 'none';
+      document.getElementById('quiz-screen').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+  </script>
+</body>
+</html>
